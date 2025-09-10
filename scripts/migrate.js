@@ -89,3 +89,30 @@ function promptUserForBackup() {
     );
   });
 }
+function runMigration(network) {
+  return new Promise((resolve, reject) => {
+    const subprocess = require("child_process").spawn(
+      "npx truffle",
+      [
+        "migrate",
+        "--reset",
+        "--network",
+        network,
+      ],
+      {
+        shell: true,
+        stdin: "inherit",
+      }
+    );
+    
+    subprocess.stdout.pipe(process.stdout);
+    subprocess.stderr.pipe(process.stderr);
+
+    subprocess.on("close", (code) => {
+      if (code !== 0) {
+        reject(new Error(`Migration failed with exit code ${code}`));
+      }
+      resolve();
+    });
+  });
+}
